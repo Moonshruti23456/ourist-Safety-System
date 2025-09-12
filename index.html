@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tourist Safety System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Teal -->
+    <!-- Application Structure Plan: The application is structured as a single-page, scrolling explainer dashboard. This design was chosen to guide the user through a narrative journey, starting with the problem (The Challenge), presenting the high-level solution (Our Solution & Core Tech), detailing its features (Feature Deep-Dive), visualizing the operational flow (Ecosystem Flow), and finally, positioning it in the market (Market Landscape). This thematic, top-down approach is more intuitive for understanding a complex system than a fragmented multi-page site. Key interactions include tabbed content for layered information, interactive charts for data exploration, and hover effects on flowcharts to clarify connections, enhancing user engagement and comprehension without overwhelming them. -->
+    <!-- Visualization & Content Choices: 
+        1. Tourist Incidents Chart: Report Info -> Common tourist safety issues. Goal -> Quantify the problem. Viz -> Bar Chart (Chart.js). Interaction -> Tooltips on hover show exact numbers. Justification -> A bar chart is excellent for comparing categorical data and immediately highlighting the most frequent problems.
+        2. System Architecture Diagram: Report Info -> The interconnected components of the system. Goal -> Organize and show relationships. Viz -> HTML/CSS Flowchart. Interaction -> Hover to highlight component and connections. Justification -> A visual diagram simplifies a complex architecture, making the system's structure easy to grasp.
+        3. Alert Distribution Chart: Report Info -> Types of alerts the system generates. Goal -> Show proportions. Viz -> Donut Chart (Chart.js). Interaction -> Tooltips on hover. Justification -> A donut chart effectively displays the parts of a whole, showing which alert types are most common in a simulated scenario.
+        4. Ecosystem Flow Diagram: Report Info -> The end-to-end process from tourist entry to incident resolution. Goal -> Show process/change. Viz -> Numbered HTML/CSS step-flow diagram. Interaction -> Click/hover on steps to reveal details. Justification -> A step-by-step flow is the clearest way to explain a chronological process, guiding the user through the entire operational sequence.
+        5. Competitive Analysis Table: Report Info -> Need for a unique app. Goal -> Compare features. Viz -> HTML Table. Interaction -> Static comparison. Justification -> A table provides a direct, feature-by-feature comparison, clearly articulating the proposed app's unique value proposition.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #333D4B;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 450px;
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #14B8A6;
+        }
+        .tab-button.active {
+            border-color: #14B8A6;
+            color: #14B8A6;
+            background-color: #F0FDFA;
+        }
+        .flowchart-node {
+            border: 2px solid #E5E7EB;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            background-color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .flowchart-node:hover {
+            border-color: #14B8A6;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .flowchart-arrow {
+            color: #9CA3AF;
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .step-card {
+            background-color: white;
+            border-left: 4px solid #E5E7EB;
+            transition: all 0.3s ease;
+        }
+        .step-card:hover {
+            border-left-color: #14B8A6;
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-teal-600">
+                <span>🛡</span> Tourist Safety System
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#challenge" class="nav-link text-gray-600 font-medium">The Challenge</a>
+                <a href="#solution" class="nav-link text-gray-600 font-medium">Our Solution</a>
+                <a href="#features" class="nav-link text-gray-600 font-medium">Features</a>
+                <a href="#flow" class="nav-link text-gray-600 font-medium">Ecosystem Flow</a>
+                <a href="#market" class="nav-link text-gray-600 font-medium">Market Landscape</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-gray-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#challenge" class="block py-2 px-6 text-sm text-gray-600 hover:bg-gray-100">The Challenge</a>
+            <a href="#solution" class="block py-2 px-6 text-sm text-gray-600 hover:bg-gray-100">Our Solution</a>
+            <a href="#features" class="block py-2 px-6 text-sm text-gray-600 hover:bg-gray-100">Features</a>
+            <a href="#flow" class="block py-2 px-6 text-sm text-gray-600 hover:bg-gray-100">Ecosystem Flow</a>
+            <a href="#market" class="block py-2 px-6 text-sm text-gray-600 hover:bg-gray-100">Market Landscape</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Hero Section -->
+        <section id="overview" class="text-center mb-24">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">A New Era of Tourist Safety.</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                Leveraging AI, Blockchain, and Geo-Fencing to create a secure, responsive, and seamless travel experience in India's beautiful and remote regions.
+            </p>
+        </section>
+
+        <!-- The Challenge Section -->
+        <section id="challenge" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">The Challenge: Ensuring Visitor Safety</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">While tourism is a vital economic driver, especially in remote areas like the Northeast, ensuring visitor safety remains a significant hurdle. Traditional methods are often inadequate, leading to various preventable incidents. This section outlines the common issues tourists face, based on compiled national data.</p>
+            </div>
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <h3 class="text-xl font-semibold text-center mb-6">Reported Incidents Affecting Tourists in India (2023-2024)</h3>
+                <div class="chart-container">
+                    <canvas id="incidentsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Solution Section -->
+        <section id="solution" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">Our Solution: An Integrated Ecosystem</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">We propose a smart, technology-driven solution that ensures real-time monitoring, rapid incident response, and secure identity verification. The system is a robust digital ecosystem that connects tourists, law enforcement, and tourism departments on a single, intelligent platform.</p>
+            </div>
+            
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <h3 class="text-xl font-semibold text-center mb-8">System Architecture Overview</h3>
+                <div class="grid md:grid-cols-3 items-center gap-x-8 gap-y-4 text-center">
+                    <div class="flowchart-node">
+                        <span class="text-2xl">📱</span>
+                        <h4 class="font-semibold mt-2">Tourist Mobile App</h4>
+                        <p class="text-sm text-gray-500">Digital ID, Alerts, Panic Button</p>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <span class="flowchart-arrow hidden md:block">→</span>
+                        <span class="flowchart-arrow block md:hidden">↓</span>
+                    </div>
+                    <div class="flowchart-node">
+                        <span class="text-2xl">🧠</span>
+                        <h4 class="font-semibold mt-2">AI-Powered Core</h4>
+                        <p class="text-sm text-gray-500">Anomaly Detection & Risk Analysis</p>
+                    </div>
+                    <div class="flex items-center justify-center md:col-start-2">
+                        <span class="flowchart-arrow block">↓</span>
+                    </div>
+                    <div class="flowchart-node md:col-start-3 row-start-1">
+                        <span class="text-2xl">🖥</span>
+                        <h4 class="font-semibold mt-2">Authority Dashboard</h4>
+                        <p class="text-sm text-gray-500">Heatmaps, Tracking, E-FIR</p>
+                    </div>
+                    <div class="flex items-center justify-center md:col-start-2">
+                         <span class="flowchart-arrow hidden md:block">←</span>
+                    </div>
+                </div>
+
+                <div class="mt-12">
+                    <h3 class="text-xl font-semibold text-center mb-6">Core Technologies Explained</h3>
+                    <div class="flex justify-center mb-6 border-b">
+                        <button data-tab="blockchain" class="tab-button active py-2 px-4 border-b-2 font-medium text-sm">Blockchain Digital ID</button>
+                        <button data-tab="ai" class="tab-button py-2 px-4 border-b-2 font-medium text-sm text-gray-500">AI Anomaly Detection</button>
+                        <button data-tab="geo" class="tab-button py-2 px-4 border-b-2 font-medium text-sm text-gray-500">Geo-Fencing Alerts</button>
+                    </div>
+                    <div id="tab-content" class="text-center max-w-2xl mx-auto text-gray-600">
+                        <div id="blockchain-content">
+                            <h4 class="font-semibold text-lg mb-2">Secure & Tamper-Proof Identity</h4>
+                            <p>We use a blockchain to issue secure digital IDs to tourists. These IDs contain basic KYC, itinerary, and emergency contacts, and are only valid for the trip's duration. This prevents identity fraud and ensures that travel records are immutable and trustworthy, providing a single source of truth for authorities.</p>
+                        </div>
+                        <div id="ai-content" class="hidden">
+                            <h4 class="font-semibold text-lg mb-2">Intelligent Monitoring & Predictive Alerts</h4>
+                            <p>Our AI models analyze travel patterns in real-time. The system detects anomalies like sudden location drop-offs, prolonged inactivity, or significant deviation from planned routes. This proactive approach helps flag potential distress situations before they escalate, allowing for early intervention.</p>
+                        </div>
+                        <div id="geo-content" class="hidden">
+                            <h4 class="font-semibold text-lg mb-2">Context-Aware Safety Boundaries</h4>
+                            <p>The system uses geo-fencing to create virtual perimeters around high-risk or restricted zones (e.g., sensitive border areas, dangerous trekking paths). If a tourist enters one of these zones, an instant alert is sent to both the tourist and the authorities, providing a crucial safety warning.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Feature Deep-Dive Section -->
+        <section id="features" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">Feature Deep-Dive</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">The system is designed with two primary user groups in mind: the tourists who need protection and the authorities who provide it. This section explores the specific features tailored for each group, creating a seamless and effective safety network.</p>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <div class="flex justify-center mb-6 border-b">
+                    <button data-feature-tab="tourist" class="tab-button active py-2 px-4 border-b-2 font-medium text-sm">For Tourists</button>
+                    <button data-feature-tab="authority" class="tab-button py-2 px-4 border-b-2 font-medium text-sm text-gray-500">For Authorities</button>
+                </div>
+
+                <div id="feature-tab-content">
+                    <div id="tourist-content">
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="p-4 border rounded-lg bg-gray-50">
+                                <h4 class="font-semibold">🔗 Digital ID</h4>
+                                <p class="text-sm text-gray-600">A secure, blockchain-based ID generated at entry points, valid only for the trip duration.</p>
+                            </div>
+                            <div class="p-4 border rounded-lg bg-gray-50">
+                                <h4 class="font-semibold">📊 Safety Score</h4>
+                                <p class="text-sm text-gray-600">An auto-assigned score based on travel patterns and area sensitivity to raise awareness.</p>
+                            </div>
+                            <div class="p-4 border rounded-lg bg-gray-50">
+                                <h4 class="font-semibold">📍 Geo-Fencing Alerts</h4>
+                                <p class="text-sm text-gray-600">Receive instant notifications when entering high-risk or restricted zones.</p>
+                            </div>
+                            <div class="p-4 border rounded-lg bg-gray-50">
+                                <h4 class="font-semibold">🆘 Panic Button</h4>
+                                <p class="text-sm text-gray-600">Share your live location with the nearest police unit and emergency contacts with a single tap.</p>
+                            </div>
+                            <div class="p-4 border rounded-lg bg-gray-50">
+                                <h4 class="font-semibold">🛰 Opt-In Tracking</h4>
+                                <p class="text-sm text-gray-600">Allow family or authorities to see your real-time location for added peace of mind.</p>
+                            </div>
+                            <div class="p-4 border rounded-lg bg-gray-50">
+                                <h4 class="font-semibold">🌐 Multilingual Support</h4>
+                                <p class="text-sm text-gray-600">Access all features in 10+ Indian languages plus English, with voice and text options.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="authority-content" class="hidden">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="font-semibold text-lg mb-4">Real-Time Situational Awareness</h3>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start">
+                                        <span class="text-teal-500 font-bold mr-2">✓</span>
+                                        <p class="text-sm text-gray-600"><strong class="font-medium text-gray-800">Visualizations:</strong> Real-time heat maps of tourist clusters and high-risk zones.</p>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-teal-500 font-bold mr-2">✓</span>
+                                        <p class="text-sm text-gray-600"><strong class="font-medium text-gray-800">Secure Records:</strong> Instant access to digital ID records, alert history, and last known locations.</p>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-teal-500 font-bold mr-2">✓</span>
+                                        <p class="text-sm text-gray-600"><strong class="font-medium text-gray-800">Automated E-FIR:</strong> Automatically generate First Information Reports for missing person cases to expedite investigations.</p>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-4 text-center">Real-time Alert Distribution (Simulated)</h3>
+                                <div class="chart-container" style="height: 30vh; max-height: 300px;">
+                                    <canvas id="alertsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ecosystem Flow Section -->
+        <section id="flow" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">Ecosystem in Action: A Tourist's Journey</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">This flowchart illustrates how the system works from the moment a tourist arrives until an incident is resolved. Each step is connected, creating a proactive safety net that operates seamlessly in the background throughout the entire visit.</p>
+            </div>
+            <div class="space-y-6">
+                <div class="step-card p-4">
+                    <h4 class="font-bold text-teal-600">Step 1: On-Arrival Registration</h4>
+                    <p class="text-sm text-gray-600">Tourist arrives at an airport or hotel. Their KYC (Aadhaar/Passport) is scanned, and a secure, temporary Blockchain Digital ID is generated. They download the companion app.</p>
+                </div>
+                <div class="pl-6 text-2xl text-gray-300">↓</div>
+                <div class="step-card p-4">
+                    <h4 class="font-bold text-teal-600">Step 2: Safe Exploration</h4>
+                    <p class="text-sm text-gray-600">The tourist explores. The app runs in the background, updating their Safety Score and checking for entry into geo-fenced zones. The AI monitors for travel anomalies.</p>
+                </div>
+                <div class="pl-6 text-2xl text-gray-300">↓</div>
+                <div class="step-card p-4">
+                    <h4 class="font-bold text-teal-600">Step 3: Anomaly or Incident Occurs</h4>
+                    <p class="text-sm text-gray-600">A potential issue is triggered. This could be the tourist pressing the Panic Button, the AI detecting prolonged inactivity, or a breach of a geo-fenced high-risk zone.</p>
+                </div>
+                <div class="pl-6 text-2xl text-gray-300">↓</div>
+                <div class="step-card p-4">
+                    <h4 class="font-bold text-teal-600">Step 4: Instant Alert & Dispatch</h4>
+                    <p class="text-sm text-gray-600">An immediate alert with the tourist's Digital ID, location, and alert type is sent to the central dashboard and dispatched to the nearest police unit and the tourist's emergency contacts.</p>
+                </div>
+                <div class="pl-6 text-2xl text-gray-300">↓</div>
+                <div class="step-card p-4">
+                    <h4 class="font-bold text-teal-600">Step 5: Coordinated Response</h4>
+                    <p class="text-sm text-gray-600">Authorities use the dashboard to track the tourist's last known location and coordinate a response. If the tourist is reported missing, an E-FIR is automatically generated to begin a formal investigation.</p>
+                </div>
+                <div class="pl-6 text-2xl text-gray-300">↓</div>
+                <div class="step-card p-4">
+                    <h4 class="font-bold text-teal-600">Step 6: Resolution & Departure</h4>
+                    <p class="text-sm text-gray-600">The incident is resolved. At the end of the trip, the Digital ID automatically expires, ensuring all temporary data is secured and privacy is maintained.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Landscape Section -->
+        <section id="market" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">Market Landscape & Our Unique Value</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">While some general safety and state-specific tourism apps exist in India, none offer a fully integrated, technology-driven ecosystem focused on proactive safety. Our proposed system fills a critical gap by combining multiple advanced technologies into a single, cohesive solution.</p>
+            </div>
+            <div class="overflow-x-auto bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Feature</th>
+                            <th scope="col" class="px-6 py-3 text-center">Existing Apps (Typical)</th>
+                            <th scope="col" class="px-6 py-3 text-center text-teal-600 font-bold">Our Proposed System</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 font-medium">Identity Verification</td>
+                            <td class="px-6 py-4 text-center">Manual / Basic Login</td>
+                            <td class="px-6 py-4 text-center font-semibold text-green-600">✅ Blockchain Digital ID</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 font-medium">Safety Alerts</td>
+                            <td class="px-6 py-4 text-center">Basic SOS / Panic Button</td>
+                            <td class="px-6 py-4 text-center font-semibold text-green-600">✅ AI Anomaly Detection & Geo-Fencing</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 font-medium">Authority Integration</td>
+                            <td class="px-6 py-4 text-center">Limited / Manual Reporting</td>
+                            <td class="px-6 py-4 text-center font-semibold text-green-600">✅ Real-time Dashboard & Auto E-FIR</td>
+                        </tr>
+                         <tr class="border-b">
+                            <td class="px-6 py-4 font-medium">Data Security</td>
+                            <td class="px-6 py-4 text-center">Standard Encryption</td>
+                            <td class="px-6 py-4 text-center font-semibold text-green-600">✅ Tamper-Proof Blockchain Records</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 font-medium">Scope</td>
+                            <td class="px-6 py-4 text-center">Informational / City-specific</td>
+                            <td class="px-6 py-4 text-center font-semibold text-green-600">✅ Comprehensive Safety Ecosystem</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-24">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>&copy; 2025 Smart Tourist Safety Initiative. A concept for the Ministry of Development of North Eastern Region.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const incidentsData = {
+                labels: ['Theft & Pickpocketing', 'Scams & Fraud', 'Getting Lost / Stranded', 'Medical Emergencies', 'Harassment', 'Transport Issues'],
+                datasets: [{
+                    label: 'Number of Reported Incidents',
+                    data: [1250, 980, 750, 420, 350, 610],
+                    backgroundColor: 'rgba(20, 184, 166, 0.6)',
+                    borderColor: 'rgba(13, 148, 136, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            };
+
+            const incidentsCtx = document.getElementById('incidentsChart').getContext('2d');
+            new Chart(incidentsCtx, {
+                type: 'bar',
+                data: incidentsData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#E5E7EB'
+                            }
+                        },
+                        y: {
+                           grid: {
+                                display: false
+                           }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#333D4B',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 4,
+                        }
+                    }
+                }
+            });
+
+            const alertsData = {
+                labels: ['Geo-fence Breach', 'Panic Alert', 'AI Anomaly Detected'],
+                datasets: [{
+                    data: [45, 15, 40],
+                    backgroundColor: [
+                        'rgba(251, 191, 36, 0.7)',
+                        'rgba(239, 68, 68, 0.7)',
+                        'rgba(59, 130, 246, 0.7)'
+                    ],
+                    borderColor: [
+                        '#FBBF24',
+                        '#EF4444',
+                        '#3B82F6'
+                    ],
+                    borderWidth: 2
+                }]
+            };
+
+            const alertsCtx = document.getElementById('alertsChart').getContext('2d');
+            new Chart(alertsCtx, {
+                type: 'doughnut',
+                data: alertsData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                boxWidth: 12,
+                            }
+                        },
+                        tooltip: {
+                           callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                           }
+                        }
+                    }
+                }
+            });
+
+            const tabs = document.querySelectorAll('.tab-button[data-tab]');
+            const tabContent = document.getElementById('tab-content').children;
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => item.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetId = tab.dataset.tab;
+                    
+                    for (let content of tabContent) {
+                        content.classList.add('hidden');
+                    }
+                    document.getElementById(targetId + '-content').classList.remove('hidden');
+                });
+            });
+            
+            const featureTabs = document.querySelectorAll('.tab-button[data-feature-tab]');
+            const featureTabContent = document.getElementById('feature-tab-content').children;
+
+            featureTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    featureTabs.forEach(item => item.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetId = tab.dataset.featureTab;
+                    
+                    for (let content of featureTabContent) {
+                        content.classList.add('hidden');
+                    }
+                    document.getElementById(targetId + '-content').classList.remove('hidden');
+                });
+            });
+
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
